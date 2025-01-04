@@ -14,7 +14,12 @@
             background-repeat: no-repeat;
             background-attachment: fixed;
             min-height: 100vh;
+        }
+        body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
             color: #333;
         }
         h1 {
@@ -72,17 +77,13 @@
     <div id="file-list">加载中...</div>
 
     <script>
-        const owner = "AsakawaUniversityofScience";
-        const repo = "Asakawa-Library-";
-        const token = "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"; // 这里填写你的令牌
-        const headers = {
-            Authorization: `token ${token}`
-        };
-        let selectedBranch = "main"; 
+        const owner = "AsakawaUniversityofScience"; // 仓库拥有者
+        const repo = "Asakawa-Library-"; // 仓库名称
+        let selectedBranch = "main"; // 默认分支
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
 
         function loadBranches() {
-            fetch(`${apiUrl}/branches`, { headers })
+            fetch(`${apiUrl}/branches`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`GitHub API 错误: ${response.status}`);
@@ -105,7 +106,7 @@
 
         function loadDirectory(path = "") {
             const url = `${apiUrl}/contents/${path}?ref=${selectedBranch}`;
-            fetch(url, { headers })
+            fetch(url)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`GitHub API 错误: ${response.status}`);
