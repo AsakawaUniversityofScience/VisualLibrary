@@ -38,7 +38,7 @@
 <body>
     <h1>GitHub PDF Viewer</h1>
     <ul id="file-list">
-        <!-- 文件列表将通过 JavaScript 动态生成 -->
+        <!-- 文件夹和文件列表将通过 JavaScript 动态生成 -->
     </ul>
     <iframe id="pdf-viewer" src="" hidden></iframe>
 
@@ -47,32 +47,44 @@
         const repoOwner = "AsakawaUniversityofScience"; // 替换为你的 GitHub 用户名
         const repoName = "VisualLibrary"; // 替换为你的 GitHub 仓库名
         const branchName = "main"; // 替换为你的分支名
+        const baseFolder = "文献"; // 替换为你的文件夹名
 
-        // GitHub API 获取文件列表
+        // GitHub API 基础 URL
         const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
 
-        // 获取文件列表并显示
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                const fileList = document.getElementById("file-list");
-                data.forEach(file => {
-                    if (file.type === "file" && file.name.endsWith(".pdf")) {
+        // 获取文件夹或文件内容并显示
+        function loadFolder(path) {
+            const folderUrl = `${apiUrl}${path}?ref=${branchName}`;
+            fetch(folderUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const fileList = document.getElementById("file-list");
+                    fileList.innerHTML = ""; // 清空当前列表
+
+                    data.forEach(item => {
                         const listItem = document.createElement("li");
                         const link = document.createElement("a");
-                        link.textContent = file.name;
-                        link.href = "#";
-                        link.onclick = () => {
-                            loadPdf(file.download_url);
-                        };
+
+                        if (item.type === "dir") {
+                            // 如果是文件夹，设置为可点击链接
+                            link.textContent = `📁 ${item.name}`;
+                            link.href = "#";
+                            link.onclick = () => loadFolder(item.path);
+                        } else if (item.type === "file" && item.name.endsWith(".pdf")) {
+                            // 如果是 PDF 文件，设置为可打开链接
+                            link.textContent = `📄 ${item.name}`;
+                            link.href = "#";
+                            link.onclick = () => loadPdf(item.download_url);
+                        }
+
                         listItem.appendChild(link);
                         fileList.appendChild(listItem);
-                    }
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching folder contents:", error);
                 });
-            })
-            .catch(error => {
-                console.error("Error fetching file list:", error);
-            });
+        }
 
         // 加载 PDF 文件
         function loadPdf(url) {
@@ -80,6 +92,9 @@
             pdfViewer.src = url;
             pdfViewer.hidden = false;
         }
+
+        // 初始化加载根文件夹
+        loadFolder(baseFolder);
     </script>
 </body>
 </html>
