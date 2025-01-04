@@ -6,20 +6,15 @@
     <title>可视化浅川科学大学图书馆</title>
     <style>
         body {
-    margin: 0;
-    padding: 0;
-    background-image: url('1.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed; /* 背景固定到视窗 */
-    min-height: 100vh; /* 确保背景图片至少覆盖视窗高度 */
-}
-        body {
-            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-image: url('1.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
             color: #333;
         }
         h1 {
@@ -63,9 +58,9 @@
             text-decoration: underline;
         }
         #branch-selector label {
-    color: white;
-    font-size: 16px;
-}
+            color: white;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -77,14 +72,23 @@
     <div id="file-list">加载中...</div>
 
     <script>
-       const owner = "AsakawaUniversityofScience";
-       const repo = "Asakawa-Library-";
+        const owner = "AsakawaUniversityofScience";
+        const repo = "Asakawa-Library-";
+        const token = "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"; // 这里填写你的令牌
+        const headers = {
+            Authorization: `token ${token}`
+        };
         let selectedBranch = "main"; 
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
 
         function loadBranches() {
-            fetch(`${apiUrl}/branches`)
-                .then(response => response.json())
+            fetch(`${apiUrl}/branches`, { headers })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`GitHub API 错误: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(branches => {
                     const branchSelector = document.getElementById("branches");
                     branches.forEach(branch => {
@@ -101,8 +105,13 @@
 
         function loadDirectory(path = "") {
             const url = `${apiUrl}/contents/${path}?ref=${selectedBranch}`;
-            fetch(url)
-                .then(response => response.json())
+            fetch(url, { headers })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`GitHub API 错误: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => displayFiles(data, path))
                 .catch(error => {
                     document.getElementById("file-list").innerHTML = `<p style="color: red;">加载失败: ${error.message}</p>`;
